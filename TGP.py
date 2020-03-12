@@ -23,7 +23,6 @@ class TGP:
         self.num_tag = self.tag_x.shape[1]
         self.jitter = 1e-4
         self.normalize()
-#        self.lamd = 1
 
     # Normalize y
     def normalize(self):
@@ -74,11 +73,6 @@ class TGP:
         return K
 
     def neg_log_likelihood(self, theta):
-#        K = self.kernel(self.src_x, self.tag_x, theta)
-#        L = np.linalg.cholesky(K)
-#        logDetK = np.sum(np.log(np.diag(L)))
-#        alpha = chol_inv(L, self.train_y.T)
-#        nlz = 0.5*(np.dot(self.train_y, alpha) + (self.num_src+self.num_tag) * np.log(2*np.pi)) + logDetK
         sigma2_src = np.exp(theta[self.dim+1])
         sigma2_tag = np.exp(theta[self.dim+2])
         K_ss = self.kernel1(self.src_x, self.src_x, theta) + sigma2_src * np.eye(self.num_src) + self.jitter*np.eye(self.num_src)
@@ -106,14 +100,12 @@ class TGP:
     # Minimize the negative log-likelihood
     def train(self):
         theta0 = self.get_default_theta()
-        print('theta before training', theta0)
         self.loss = np.inf
         self.theta = np.copy(theta0)
         hyp_bounds = [[None, None]] * (self.dim+3)
         hyp_bounds.extend([[-1,1]])
 
         nlz = self.neg_log_likelihood(theta0)
-        print('nlz before training', nlz)
 
         def loss(theta):
             nlz = self.neg_log_likelihood(theta)
@@ -149,8 +141,6 @@ class TGP:
             sys.exit(1)
 
         print('TGP. TGP model training process finished')
-        print('nlz after training', self.nlz)
-        print('theta after training', self.theta)
 
     def predict(self, test_x, is_diag=1):
         output_scale = np.exp(self.theta[0])
